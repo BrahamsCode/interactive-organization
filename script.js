@@ -53,6 +53,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let contextMenuProcessId = null;
     let clipboardData = null;
     let zoomLevel = 1; // 1 = 100%
+    
+    // Variables para navegación panorámica
+    let isPanning = false;
+    let startX, startY, startScrollLeft, startScrollTop;
 
     function renderProcesses() {
         diagramContainer.innerHTML = '';
@@ -376,6 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Aplicar zoom
     function applyZoom() {
+        diagramContainer.style.transformOrigin = '0 0';
         diagramContainer.style.transform = `scale(${zoomLevel})`;
         zoomLevelEl.textContent = `${Math.round(zoomLevel * 100)}%`;
         jsPlumbInstance.setZoom(zoomLevel);
@@ -471,20 +476,95 @@ document.addEventListener('DOMContentLoaded', function() {
     // Inicializar el diagrama
     renderProcesses();
 
+    // Configurar la navegación panorámica (PAN)
+    diagramContainer.addEventListener('mousedown', (e) => {
+        // Solo activar navegación panorámica con clic primario y si no se hace clic en un nodo
+        if (e.button === 0 && !e.target.closest('.process-node') && !e.target.closest('.add-after-btn')) {
+            isPanning = true;
+            diagramContainer.style.cursor = 'grabbing';
+            
+            // Guardar posición inicial
+            startX = e.clientX;
+            startY = e.clientY;
+            startScrollLeft = diagramContainer.scrollLeft;
+            startScrollTop = diagramContainer.scrollTop;
+            
+            e.preventDefault();
+        }
+    });
+
+    // Manejar el movimiento del mouse para la navegación panorámica
+    document.addEventListener('mousemove', (e) => {
+        if (!isPanning) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        diagramContainer.scrollLeft = startScrollLeft - dx;
+        diagramContainer.scrollTop = startScrollTop - dy;
+    });
+
+    // Detener la navegación panorámica
+    document.addEventListener('mouseup', () => {
+        if (isPanning) {
+            isPanning = false;
+            diagramContainer.style.cursor = 'default';
+        }
+    });
+
+    // Configuración del zoom con la rueda del mouse
+    diagramContainer.addEventListener('wheel', (e) => {
+        if (e.ctrlKey) {
+            // Zoom con Ctrl + rueda
+            e.preventDefault();
+            
+            // Calcular el punto de referencia para el zoom (posición del cursor)
+            const rect = diagramContainer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // Posición actual del scroll
+            const startScrollLeft = diagramContainer.scrollLeft;
+            const startScrollTop = diagramContainer.scrollTop;
+            
+            // Posición relativa del cursor dentro del contenedor de desplazamiento
+            const mouseXRatio = (mouseX + startScrollLeft) / (diagramContainer.scrollWidth * zoomLevel);
+            const mouseYRatio = (mouseY + startScrollTop) / (diagramContainer.scrollHeight * zoomLevel);
+            
+            // Factor de zoom ajustable
+            const oldZoom = zoomLevel;
+            
+            // Ajustar nivel de zoom según la dirección de la rueda
+            if (e.deltaY < 0) {
+                // Zoom in
+                if (zoomLevel < 2) {
+                    zoomLevel += 0.1;
+                }
+            } else {
+                // Zoom out
+                if (zoomLevel > 0.5) {
+                    zoomLevel -= 0.1;
+                }
+            }
+            
+            // Solo aplicar si el zoom cambió
+            if (oldZoom !== zoomLevel) {
+                // Aplicar zoom
+                applyZoom();
+                
+                // Ajustar el scroll para mantener el punto de referencia
+                setTimeout(() => {
+                    const newScrollLeft = mouseXRatio * diagramContainer.scrollWidth * zoomLevel - mouseX;
+                    const newScrollTop = mouseYRatio * diagramContainer.scrollHeight * zoomLevel - mouseY;
+                    diagramContainer.scrollLeft = newScrollLeft;
+                    diagramContainer.scrollTop = newScrollTop;
+                }, 10);
+            }
+        }
+    });
+
     // Manejar el redimensionamiento de la ventana
     window.addEventListener('resize', () => {
         jsPlumbInstance.repaintEverything();
-    });
-
-    // Permitir zoom con la rueda del mouse
-    diagramContainer.addEventListener('wheel', (e) => {
-        if (e.ctrlKey) {
-            e.preventDefault();
-            if (e.deltaY < 0) {
-                zoomIn();
-            } else {
-                zoomOut();
-            }
-        }
     });
 });
