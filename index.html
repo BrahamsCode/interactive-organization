@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Procesos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <!-- jsPlumb library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsPlumb/2.15.6/js/jsplumb.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <div class="zoom-controls">
+                <button id="zoomOutBtn" class="zoom-btn"><i class="fas fa-search-minus"></i></button>
+                <span id="zoomLevel">100%</span>
+                <button id="zoomInBtn" class="zoom-btn"><i class="fas fa-search-plus"></i></button>
+            </div>
+        </div>
+        
+        <div id="diagramContainer" class="diagram-container">
+            <!-- Procesos se agregarán aquí dinámicamente -->
+        </div>
+        
+        <!-- Menú contextual -->
+        <div id="contextMenu" class="context-menu">
+            <div class="menu-item" id="copyNode">
+                <span>Copiar</span>
+                <span class="shortcut">Ctrl C</span>
+            </div>
+            <div class="menu-item" id="duplicateNode">
+                <span>Duplicar</span>
+                <span class="shortcut">Ctrl D</span>
+            </div>
+            <div class="menu-item" id="deleteNode">
+                <span>Eliminar</span>
+                <span class="shortcut">Del</span>
+            </div>
+            <div class="menu-separator"></div>
+            <div class="menu-item" id="helpLink">
+                <span>Enlace de ayuda</span>
+            </div>
+        </div>
+        
+        <!-- Panel lateral para editar procesos -->
+        <div id="sidePanel" class="side-panel">
+            <div class="panel-header">
+                <h2 id="panelTitle">Código</h2>
+                <button id="closePanelBtn" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="processForm">
+                <div class="form-group">
+                    <label for="pageName">ページ名</label>
+                    <input type="text" id="pageName" name="pageName" value="トップ">
+                </div>
+                
+                <div class="form-group">
+                    <label for="categoryName">カテゴリー名</label>
+                    <select id="categoryName" name="categoryName">
+                        <option value="トップ">トップ</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="url">URL</label>
+                    <input type="text" id="url" name="url" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords">Keywords</label>
+                    <textarea id="keywords" name="keywords"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" id="saveBtn" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存する
+                    </button>
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">
+                        削除
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
